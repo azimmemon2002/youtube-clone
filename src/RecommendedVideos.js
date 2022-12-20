@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import VideoCard from "./VideoCard";
 import "./RecommendedVideos.css";
-import axios from "axios"; // python request type get data  
+import axios from "axios"; // python request type get data
 import { DateTime } from "luxon";
 import { CircularProgress } from "@mui/material";
 import { Alert } from "@mui/material";
-import { BrowserRouter as Link } from "react-router-dom";
 
 const RecommendedVideos = () => {
   const [videoCards, setVideoCards] = useState([]);
@@ -15,10 +14,13 @@ const RecommendedVideos = () => {
   useEffect(() => {
     axios
       .get(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=20&key=AIzaSyALHgoCvaxRlyPBjXdgTnbUN6St3VfEozo`
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=10&key=${process.env.REACT_APP_YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=10&key=AIzaSyALHgoCvaxRlyPBjXdgTnbUN6St3VfEozo`
       )
       .then((response) => {
         createVideoCards(response.data.items);
+        console.log(response);
+        
       })
       .catch((error) => {
         console.log(error);
@@ -29,14 +31,21 @@ const RecommendedVideos = () => {
   async function createVideoCards(videoItems) {
     let newVideoCards = [];
     for (const video of videoItems) {
+      // console.log("Start");
       const videoId = video.id;
+      // console.log(videoId);
       const snippet = video.snippet;
+      // console.log(snippet);
       const channelId = snippet.channelId;
+      // console.log(channelId);
       const response = await axios.get(
-        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=AIzaSyALHgoCvaxRlyPBjXdgTnbUN6St3VfEozo`
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=${process.env.REACT_APP_YOUTUBE_API_KEY}`
       );
+      // console.log(response);
       const channelImage = response.data.items[0].snippet.thumbnails.medium.url;
+      // console.log(channelImage);
 
+      // console.log("End");
       const title = snippet.title;
       const image = snippet.thumbnails.medium.url;
       const views = video.statistics.viewCount;
@@ -65,7 +74,7 @@ const RecommendedVideos = () => {
     );
   }
   return (
-    <div className="recommendedvideos">
+    <div className="recommendedvideos" style={{ height: "100%" }}>
       <div className="loadingcircular">
         {isLoading ? (
           <CircularProgress className="loading" color="error" />
@@ -74,16 +83,15 @@ const RecommendedVideos = () => {
       <div className="recommendedvideos__videos">
         {videoCards.map((item) => {
           return (
-            <Link key={item.videoId}>
-              <VideoCard
-                title={item.title}
-                image={item.image}
-                views={item.views}
-                timestamp={item.timestamp}
-                channel={item.channel}
-                channelImage={item.channelImage}
-              />
-            </Link>
+            <VideoCard
+              key={item.videoId}
+              title={item.title}
+              image={item.image}
+              views={item.views}
+              timestamp={item.timestamp}
+              channel={item.channel}
+              channelImage={item.channelImage}
+            />
           );
         })}
       </div>
@@ -92,3 +100,6 @@ const RecommendedVideos = () => {
 };
 
 export default RecommendedVideos;
+
+
+// https://www.youtube.com/watch
